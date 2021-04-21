@@ -23,6 +23,9 @@ class Functions:
         self.noise_arr = []
         self.signal_to_noise_arr = []
 
+        self.sn_table = []
+        self.exp_table = []
+
         self.snr_blue = []
         self.snr_green = []
         self.snr_red = []
@@ -40,7 +43,7 @@ class Functions:
 
         self.tau_func = interpolate.Throughput()
 
-    def signal_to_noise_low(self, res_mode, pwv, exp_t, exp_n, mag, sky, wave):
+    def signal_to_noise_low(self, res_mode, pwv, exp_t, exp_n, mag, sky, wave, print_text):
         self.tau_func.set_data(res_mode)
 
         self.sky_bg_arr = np.zeros(self.band_n)
@@ -124,7 +127,61 @@ class Functions:
 
             self.signal_to_noise_arr[i] = self.signal_arr[i] / self.noise_arr[i]
 
-        output.display_single(res_mode, pwv, exp_t, exp_n, mag, sky, self.signal_to_noise_arr, wave)
+        if print_text is True:
+            output.display_single(res_mode, pwv, exp_t, exp_n, mag, sky, self.signal_to_noise_arr, wave)
+
+        return self.signal_to_noise_arr  # add 210408 hojae
+
+    def exp_time_cal(self, res_mode, pwv, target_sn, mag, sky, wave):  # add 210408 hojae
+        self.exp_table = np.zeros(len(mag))
+
+        for idx in range(1, 5):  # from 10 to 10,000
+            self.sn_table.append(self.signal_to_noise_low(res_mode, pwv, 10**idx, 1, mag, sky, wave, False))
+        sn_table = np.array(self.sn_table)
+
+        # for B
+        for band in range(len(mag)-1):
+            if sn_table[0, band] > target_sn:
+                output.display_simple_text("Required exposure time of band %d single frame is shorter than 10 seconds." % band)
+                return None
+            elif (sn_table[0, band] <= target_sn) & (target_sn <= sn_table[1, band]):
+                self.exp_table[band] = self.solve_bisection(band, target_sn, 10, 100, res_mode, pwv, mag, sky, wave, False)
+            elif (sn_table[1, band] <= target_sn) & (target_sn <= sn_table[2, band]):
+                self.exp_table[band] = self.solve_bisection(band, target_sn, 100, 1000, res_mode, pwv, mag, sky, wave, False)
+            elif (sn_table[2, band] <= target_sn) & (target_sn <= sn_table[3, band]):
+                self.exp_table[band] = self.solve_bisection(band, target_sn, 1000, 10000, res_mode, pwv, mag, sky, wave, False)
+            else:
+                output.display_simple_text("Required exposure time of band %d single frame is longer than 10,000 seconds(~3 hours)." % band)
+                return None
+        output.display_exp_time(res_mode, pwv, target_sn, mag, sky, self.exp_table, wave)
+        return self.exp_table
+
+    def solve_bisection(self, band, target_sn, x_min, x_max, res_mode, pwv, mag, sky, wave, print_text):  # add 210408 hojae bisection equation solver
+        func_min = self.signal_to_noise_low(res_mode, pwv, x_min, 1, mag, sky, wave, False)[band] - target_sn
+        func_max = self.signal_to_noise_low(res_mode, pwv, x_max, 1, mag, sky, wave, False)[band] - target_sn
+
+        if func_min * func_max > 0:
+            return -1  # input error
+
+        for idx in range(30):  # maximum iteration=30
+            func_min = self.signal_to_noise_low(res_mode, pwv, x_min, 1, mag, sky, wave, False)[band] - target_sn
+            func_max = self.signal_to_noise_low(res_mode, pwv, x_max, 1, mag, sky, wave, False)[band] - target_sn
+
+            x_iter = (x_min + x_max) * 0.5
+            func_iter = self.signal_to_noise_low(res_mode, pwv, x_iter, 1, mag, sky, wave, False)[band] - target_sn
+
+            if np.abs(func_min - func_max) < 0.005 * target_sn:  # convergence tolerance = 0.5% of SN
+                return x_iter
+
+            if func_min * func_iter < 0:
+                x_max = x_iter
+
+            elif func_iter * func_max < 0:
+                x_min = x_iter
+
+            else:
+                return x_iter
+        return -11  # Solution does not converge
 
     def plot_sn_mag(self, res_mode, pwv, exp_t, exp_n, min_mag, max_mag, sky):
         self.tau_func.set_data(res_mode)

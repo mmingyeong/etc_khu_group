@@ -19,6 +19,7 @@ ini_etc_version = "v0.2.0"  # add 20210324 by Tae-Geun Ji
 ini_pwv = 1
 ini_exptime = 1200
 ini_expnumber = 3
+ini_sn = 200
 ini_min_mag = 18.0
 ini_max_mag = 26.0
 ini_wave = 482

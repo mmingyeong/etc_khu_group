@@ -70,15 +70,19 @@ class MainGUI(Frame):  # change 20210324 by T-G. Ji: GUI renewal
 
         self.single_radio = Radiobutton(self.mode_frame, text="S/N Calculation", variable=self.mode,
                                         value="S/N Calculation", font=self.font, bg=c1, command=self.ui_enable)
-        self.single_radio.place(relx=0.2, rely=0.6, anchor=CENTER)
+        self.single_radio.place(relx=0.15, rely=0.6, anchor=CENTER)
+
+        self.single_radio = Radiobutton(self.mode_frame, text="ExpTime Calculation", variable=self.mode, #add 210408 hojae
+                                        value="ExpTime Calculation", font=self.font, bg=c1, command=self.ui_enable)
+        self.single_radio.place(relx=0.37, rely=0.6, anchor=CENTER)
 
         self.single_radio = Radiobutton(self.mode_frame, text="S/N vs. Magnitude", variable=self.mode,
                                         value="S/N vs. Magnitude", font=self.font, bg=c1, command=self.ui_enable)
-        self.single_radio.place(relx=0.5, rely=0.6, anchor=CENTER)
+        self.single_radio.place(relx=0.61, rely=0.6, anchor=CENTER)
 
         self.single_radio = Radiobutton(self.mode_frame, text="S/N vs. Wavelength", variable=self.mode,
                                         value="S/N vs. Wavelength", font=self.font, bg=c1, command=self.ui_enable)
-        self.single_radio.place(relx=0.8, rely=0.6, anchor=CENTER)
+        self.single_radio.place(relx=0.84, rely=0.6, anchor=CENTER)
 
         # ==== Settings for User Input Parameters Window
         self.input_window = PanedWindow(self.master, orient="vertical")
@@ -91,24 +95,31 @@ class MainGUI(Frame):  # change 20210324 by T-G. Ji: GUI renewal
 
         # PWV
         self.pwv_label = Label(self.input_frame, text="PWV [mm] = ", font=self.font, bg=c2)
-        self.pwv_label.place(x=190, y=50, anchor=E)
+        self.pwv_label.place(x=190, y=40, anchor=E)
         self.pwv_entry = Entry(self.input_frame, width=6, justify=CENTER,
                                textvariable=DoubleVar(value=ini_pwv), font=self.font)
-        self.pwv_entry.place(x=190, y=50, anchor=W)
+        self.pwv_entry.place(x=190, y=40, anchor=W)
 
         # Exposure Time
         self.exp_time_label = Label(self.input_frame, text="Exp. Time [sec] = ", font=self.font, bg=c2)
-        self.exp_time_label.place(x=190, y=80, anchor=E)
+        self.exp_time_label.place(x=190, y=70, anchor=E)
         self.exp_time_entry = Entry(self.input_frame, width=6, justify=CENTER,
                                     textvariable=DoubleVar(value=ini_exptime), font=self.font)
-        self.exp_time_entry.place(x=190, y=80, anchor=W)
+        self.exp_time_entry.place(x=190, y=70, anchor=W)
 
         # Number of Exposure
         self.exp_num_label = Label(self.input_frame, text="Number of Exp. = ", font=self.font, bg=c2)
-        self.exp_num_label.place(x=190, y=110, anchor=E)
+        self.exp_num_label.place(x=190, y=100, anchor=E)
         self.exp_num_entry = Entry(self.input_frame, width=6, justify=CENTER,
                                    textvariable=DoubleVar(value=ini_expnumber), font=self.font)
-        self.exp_num_entry.place(x=190, y=110, anchor=W)
+        self.exp_num_entry.place(x=190, y=100, anchor=W)
+
+        # Target S/N #add 210408 hojae
+        self.target_sn_label = Label(self.input_frame, text="Target S/N = ", font=self.font, bg=c2)
+        self.target_sn_label.place(x=190, y=130, anchor=E)
+        self.target_sn_entry = Entry(self.input_frame, width=6, justify=CENTER,
+                                   textvariable=DoubleVar(value=ini_sn), font=self.font)
+        self.target_sn_entry.place(x=190, y=130, anchor=W)
 
         # Target Magnitude (AB)
         self.magnitude_label = Label(self.input_frame, text="Target Magnitude (AB):", font=self.font, bg=c2)
@@ -248,6 +259,14 @@ class MainGUI(Frame):  # change 20210324 by T-G. Ji: GUI renewal
         self.mode_func = functions.Functions()
         print('...... Done!')
 
+    def ui_exp_time(self, status):  # add 210408 hojae
+        self.exp_time_entry.config(state=status)
+
+    def ui_exp_num(self, status):  # add 210408 hojae
+        self.exp_num_entry.config(state=status)
+
+    def ui_target_sn(self, status):  # add 210408 hojae
+        self.target_sn_entry.config(state=status)
 
     def ui_target_magnitude(self, status):  # add 20210324 by T-G. Ji
         self.mag_blue_entry.config(state=status)
@@ -284,18 +303,38 @@ class MainGUI(Frame):  # change 20210324 by T-G. Ji: GUI renewal
 
     def ui_enable(self):  # add 20210324 by T-G. Ji
         if self.mode.get() == "S/N Calculation":
+            self.ui_exp_time('normal')
+            self.ui_exp_num('normal')
+            self.ui_target_sn('disable')
+            self.ui_mag_range('disable')
+            self.ui_wave_range('disable')  # add 210408 hojae
+            self.ui_target_magnitude('normal')
+            self.ui_sky_brightness('normal')
+
+        elif self.mode.get() == "ExpTime Calculation":  # add 210408 hojae
+            self.ui_exp_time('disable')
+            self.exp_num_entry.delete(0, len(self.exp_num_entry.get()))
+            self.exp_num_entry.insert(-1, "1")
+            self.ui_exp_num('disable')
+            self.ui_target_sn('normal')
             self.ui_mag_range('disable')
             self.ui_wave_range('disable')
             self.ui_target_magnitude('normal')
             self.ui_sky_brightness('normal')
 
         elif self.mode.get() == "S/N vs. Magnitude":
+            self.ui_exp_time('normal')
+            self.ui_exp_num('normal')
+            self.ui_target_sn('disable')
             self.ui_target_magnitude('disable')
             self.ui_wave_range('disable')
             self.ui_mag_range('normal')
             self.ui_sky_brightness('normal')
 
         elif self.mode.get() == "S/N vs. Wavelength":
+            self.ui_exp_time('normal')
+            self.ui_exp_num('normal')
+            self.ui_target_sn('disable')
             self.ui_target_magnitude('normal')
             self.ui_sky_brightness('disable')
             self.ui_mag_range('disable')
@@ -320,6 +359,7 @@ class MainGUI(Frame):  # change 20210324 by T-G. Ji: GUI renewal
         pwv = float(self.pwv_entry.get())
         exp_t = float(self.exp_time_entry.get())
         exp_n = float(self.exp_num_entry.get())
+        target_sn = float(self.target_sn_entry.get())
         min_mag = float(self.min_mag_entry.get())
         max_mag = float(self.max_mag_entry.get())
 
@@ -334,7 +374,10 @@ class MainGUI(Frame):  # change 20210324 by T-G. Ji: GUI renewal
         # change 20210325 by T-G. Ji
         if res_mode == "LR":
             if cal_mode == "S/N Calculation":
-                self.mode_func.signal_to_noise_low(res_mode, pwv, exp_t, exp_n, mag_arr, sky_arr, set_wave)
+                self.mode_func.signal_to_noise_low(res_mode, pwv, exp_t, exp_n, mag_arr, sky_arr, set_wave, True)
+
+            elif cal_mode == "ExpTime Calculation":
+                self.mode_func.exp_time_cal(res_mode, pwv, target_sn, mag_arr, sky_arr, set_wave)
 
             elif cal_mode == "S/N vs. Magnitude":
                 self.mode_func.plot_sn_mag(res_mode, pwv, exp_t, exp_n, min_mag, max_mag, sky_arr)

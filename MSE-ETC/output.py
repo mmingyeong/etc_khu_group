@@ -32,6 +32,34 @@ def display_single(res_mode, pwv, exp_t, exp_n, mag, sky, data, wave):
         if RES_LR[5] != -1:
             print('[%.1f]\t %.2f \t %.2f \t %f \t (Band = %s)' % (wave, mag[5], sky[5], data[5], BAND_LR[5]))
 
+
+def display_simple_text(text):
+    print('==========================================================================')
+    print(text)
+
+def display_exp_time(res_mode, pwv, target_sn, mag, sky, data, wave):
+
+    print('==========================================================================')
+    print('The calculation exposure time for target S/N')
+    print(' ')
+
+    if res_mode == "LR":
+
+        print('Resolution Mode   = Low Resolution')
+        print('PWV [mm]          = %.1f' % pwv)
+        print('Exposure Number   = 1')
+        print('Target S/N   = %d' % target_sn)
+        print(' ')
+        print('Band\t Mag. \t Sky \t ExpTime [s]')
+        print('[Blue]\t %.2f \t %.2f \t %f' % (mag[0], sky[0], data[0]))
+        print('[Green]\t %.2f \t %.2f \t %f' % (mag[1], sky[1], data[1]))
+        print('[Red]\t %.2f \t %.2f \t %f' % (mag[2], sky[2], data[2]))
+        print('[NIR]\t %.2f \t %.2f \t %f' % (mag[3], sky[3], data[3]))
+        print('[%.1f]\t %.2f \t %.2f \t %f \t (Band = %s)' % (wave, mag[4], sky[4], data[4], BAND_LR[4]))
+
+        if RES_LR[5] != -1:
+            print('[%.1f]\t %.2f \t %.2f \t %f \t (Band = %s)' % (wave, mag[5], sky[5], data[5], BAND_LR[5]))
+
 def display_sn_mag(res_mode, pwv, exp_t, exp_n, min_mag, max_mag, mag_range, sky, result):
 
     print('==========================================================================')
