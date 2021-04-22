@@ -21,66 +21,66 @@ class Throughput:
 
         print('...... Reading skytable for Low Resolution')
 
-        blue_low_path = 'SKY/MSE_AM1_BLUE_2550.dat'
-        green_low_path = 'SKY/MSE_AM1_GREEN_3650.dat'
-        red_low_path = 'SKY/MSE_AM1_RED_3600.dat'
-        nir_low_path = 'SKY/MSE_AM1_NIR_3600.dat'
+#        blue_low_path = 'SKY/MSE_AM1_BLUE_2550.dat'
+#        green_low_path = 'SKY/MSE_AM1_GREEN_3650.dat'
+#        red_low_path = 'SKY/MSE_AM1_RED_3600.dat'
+#        nir_low_path = 'SKY/MSE_AM1_NIR_3600.dat'
 
-        self.data_blue_low = np.genfromtxt(blue_low_path, names=('wavelength', 'data1', 'data2', 'data3'))
-        self.data_green_low = np.genfromtxt(green_low_path, names=('wavelength', 'data1', 'data2', 'data3'))
-        self.data_red_low = np.genfromtxt(red_low_path, names=('wavelength', 'data1', 'data2', 'data3'))
-        self.data_nir_low = np.genfromtxt(nir_low_path, names=('wavelength', 'data1', 'data2', 'data3'))
+#        self.data_blue_low = np.genfromtxt(blue_low_path, names=('wavelength', 'data1', 'data2', 'data3'))
+#        self.data_green_low = np.genfromtxt(green_low_path, names=('wavelength', 'data1', 'data2', 'data3'))
+#        self.data_red_low = np.genfromtxt(red_low_path, names=('wavelength', 'data1', 'data2', 'data3'))
+#        self.data_nir_low = np.genfromtxt(nir_low_path, names=('wavelength', 'data1', 'data2', 'data3'))
 
         # =================================== add by MY ==============================================
 
         # atmospheric transmission data with no convolution
-        blue_box_path = 'SKY/MSE_AM1_box_blue.fits'
-        green_box_path = 'SKY/MSE_AM1_box_green.fits'
-        red_box_path = 'SKY/MSE_AM1_box_red.fits'
-        nir_box_path = 'SKY/MSE_AM1_box_nir.fits'
+        blue_low_box_path = 'SKY/MSE_AM1_box_blue.fits'
+        green_low_box_path = 'SKY/MSE_AM1_box_green.fits'
+        red_low_box_path = 'SKY/MSE_AM1_box_red.fits'
+        nir_low_box_path = 'SKY/MSE_AM1_box_nir.fits'
 
         # read fits files
-        self.file_blue = fits.open(blue_box_path)
-        self.file_green = fits.open(green_box_path)
-        self.file_red = fits.open(red_box_path)
-        self.file_nir = fits.open(nir_box_path)
+        self.file_blue_low = fits.open(blue_low_box_path)
+        self.file_green_low = fits.open(green_low_box_path)
+        self.file_red_low = fits.open(red_low_box_path)
+        self.file_nir_low = fits.open(nir_low_box_path)
 
-        self.data_blue = self.file_blue[1].data         #blue 350-560
-        self.data_green = self.file_green[1].data       #green 540-740
-        self.data_red = self.file_red[1].data           #red 715-985
-        self.data_nir = self.file_nir[1].data           #nir 960-1800
+        self.data_blue_low = self.file_blue_low[1].data         #blue 350-560
+        self.data_green_low = self.file_green_low[1].data       #green 540-740
+        self.data_red_low = self.file_red_low[1].data           #red 715-985
+        self.data_nir_low = self.file_nir_low[1].data           #nir 960-1800
 
         # close files
-        self.file_blue.close()
-        self.file_green.close()
-        self.file_red.close()
-        self.file_nir.close()
+        self.file_blue_low.close()
+        self.file_green_low.close()
+        self.file_red_low.close()
+        self.file_nir_low.close()
 
         # set data array (wavelength, transmission)
-        self.wave_blue = self.data_blue.field(0)
-        self.wave_green = self.data_green.field(0)
-        self.wave_red = self.data_red.field(0)
-        self.wave_nir = self.data_nir.field(0)
+        self.wave_blue_low = self.data_blue_low.field(0)
+        self.wave_green_low = self.data_green_low.field(0)
+        self.wave_red_low = self.data_red_low.field(0)
+        self.wave_nir_low = self.data_nir_low.field(0)
 
         # self.atmo_blue = []
-        self.atmo_blue_pwv1 = self.data_blue.field(1)
-        self.atmo_blue_pwv2 = self.data_blue.field(2)
-        self.atmo_blue_pwv7 = self.data_blue.field(3)
+        self.atmo_blue_pwv1 = self.data_blue_low.field(1)
+        self.atmo_blue_pwv2 = self.data_blue_low.field(2)
+        self.atmo_blue_pwv7 = self.data_blue_low.field(3)
 
         # self.atmo_green = []
-        self.atmo_green_pwv1 = self.data_green.field(1)
-        self.atmo_green_pwv2 = self.data_green.field(2)
-        self.atmo_green_pwv7 = self.data_green.field(3)
+        self.atmo_green_pwv1 = self.data_green_low.field(1)
+        self.atmo_green_pwv2 = self.data_green_low.field(2)
+        self.atmo_green_pwv7 = self.data_green_low.field(3)
 
         # self.atmo_red = []
-        self.atmo_red_pwv1 = self.data_red.field(1)
-        self.atmo_red_pwv2 = self.data_red.field(2)
-        self.atmo_red_pwv7 = self.data_red.field(3)
+        self.atmo_red_pwv1 = self.data_red_low.field(1)
+        self.atmo_red_pwv2 = self.data_red_low.field(2)
+        self.atmo_red_pwv7 = self.data_red_low.field(3)
 
         # self.atmo_nir = []
-        self.atmo_nir_pwv1 = self.data_nir.field(1)
-        self.atmo_nir_pwv2 = self.data_nir.field(2)
-        self.atmo_nir_pwv7 = self.data_nir.field(3)
+        self.atmo_nir_pwv1 = self.data_nir_low.field(1)
+        self.atmo_nir_pwv2 = self.data_nir_low.field(2)
+        self.atmo_nir_pwv7 = self.data_nir_low.field(3)
 
         # ==========================================================================================
 
@@ -98,44 +98,49 @@ class Throughput:
 
     def set_data(self, res_mode):
         if res_mode == "LR":
-            self.wave_blue = self.data_blue_low['wavelength']
-            self.wave_green = self.data_green_low['wavelength']
-            self.wave_red = self.data_red_low['wavelength']
-            self.wave_nir = self.data_nir_low['wavelength']
 
-            nlen = len(self.data_blue_low)
+            self.wave_blue = self.data_blue_low.field(0)
+            self.wave_green = self.data_green_low.field(0)
+            self.wave_red = self.data_red_low.field(0)
+            self.wave_nir = self.data_nir_low.field(0)
+
+
+            nlen = len(self.wave_blue)
             self.atmo_blue = [[0] * 3 for i in range(nlen)]
 
             for i in range(0, nlen):
-                self.atmo_blue[i] = [self.data_blue_low['data1'][i],
-                                     self.data_blue_low['data2'][i],
-                                     self.data_blue_low['data3'][i]]
+                self.atmo_blue[i] = [self.data_blue_low.field(1),
+                                     self.data_blue_low.field(2),
+                                     self.data_blue_low.field(3)]
 
-            self.wave_green = self.data_green_low['wavelength']
 
-            nlen = len(self.data_green_low)
+            self.wave_green = self.data_green_low.field(0)
+
+            nlen = len(self.wave_green)
             self.atmo_green = [[0] * 3 for i in range(nlen)]
 
             for i in range(0, nlen):
-                self.atmo_green[i] = [self.data_green_low['data1'][i],
-                                      self.data_green_low['data2'][i],
-                                      self.data_green_low['data3'][i]]
+                self.atmo_green[i] = [self.data_green_low.field(1),
+                                      self.data_green_low.field(2),
+                                      self.data_green_low.field(3)]
 
-            nlen = len(self.data_red_low)
+
+            nlen = len(self.wave_red)
             self.atmo_red = [[0] * 3 for i in range(nlen)]
 
             for i in range(0, nlen):
-                self.atmo_red[i] = [self.data_red_low['data1'][i],
-                                    self.data_red_low['data2'][i],
-                                    self.data_red_low['data3'][i]]
+                self.atmo_red[i] = [self.data_red_low.field(1),
+                                    self.data_red_low.field(2),
+                                    self.data_red_low.field(3)]
 
-            nlen = len(self.data_nir_low)
+
+            nlen = len(self.wave_nir)
             self.atmo_nir = [[0] * 3 for i in range(nlen)]
 
             for i in range(0, nlen):
-                self.atmo_nir[i] = [self.data_nir_low['data1'][i],
-                                    self.data_nir_low['data2'][i],
-                                    self.data_nir_low['data3'][i]]
+                self.atmo_nir[i] = [self.data_nir_low.field(1),
+                                    self.data_nir_low.field(1),
+                                    self.data_nir_low.field(1)]
 
             data = np.loadtxt("Throughput_LR.dat")
 

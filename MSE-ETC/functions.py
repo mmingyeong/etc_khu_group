@@ -59,7 +59,7 @@ class Functions:
 
         self.tau_atmo_arr[0] = self.tau_func.Get_TAU_atmo(pwv, WAVE_LR[0])
         self.tau_atmo_arr[1] = self.tau_func.Get_TAU_atmo(pwv, WAVE_LR[1])
-        self.tau_atmo_arr[2] = self.tau_finc.Get_TAU_atmo(pwv, WAVE_LR[2])
+        self.tau_atmo_arr[2] = self.tau_func.Get_TAU_atmo(pwv, WAVE_LR[2])
         self.tau_atmo_arr[3] = self.tau_func.Get_TAU_atmo(pwv, WAVE_LR[3])
 
         if 360 <= wave < 540:
