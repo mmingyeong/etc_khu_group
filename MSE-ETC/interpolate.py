@@ -10,6 +10,7 @@ Modification Log
 
 from parameters import *
 from scipy import interpolate
+from astropy.io import fits
 import numpy as np
 import time
 
@@ -33,10 +34,10 @@ class Throughput:
         # =================================== add by MY ==============================================
 
         # atmospheric transmission data with no convolution
-        blue_box_path = 'color/box_color/MSE_AM1_box_blue.fits'
-        green_box_path = 'color/box_color/MSE_AM1_box_green.fits'
-        red_box_path = 'color/box_color/MSE_AM1_box_red.fits'
-        nir_box_path = 'color/box_color/MSE_AM1_box_nir.fits'
+        blue_box_path = 'SKY/MSE_AM1_box_blue.fits'
+        green_box_path = 'SKY/MSE_AM1_box_green.fits'
+        red_box_path = 'SKY/MSE_AM1_box_red.fits'
+        nir_box_path = 'SKY/MSE_AM1_box_nir.fits'
 
         # read fits files
         self.file_blue = fits.open(blue_box_path)
@@ -44,10 +45,10 @@ class Throughput:
         self.file_red = fits.open(red_box_path)
         self.file_nir = fits.open(nir_box_path)
 
-        self.data_blue = self.file_blue[1].data
-        self.data_green = self.file_green[1].data
-        self.data_red = self.file_red[1].data
-        self.data_nir = self.file_nir[1].data
+        self.data_blue = self.file_blue[1].data         #blue 350-560
+        self.data_green = self.file_green[1].data       #green 540-740
+        self.data_red = self.file_red[1].data           #red 715-985
+        self.data_nir = self.file_nir[1].data           #nir 960-1800
 
         # close files
         self.file_blue.close()
@@ -233,7 +234,7 @@ class Throughput:
 
 
     #determine atmospheric throughput
-    def Get_TAU_atmo(self, input_wavelength, input_pwv):
+    def Get_TAU_atmo(self, input_pwv, input_wavelength):
 
 
         if 350.0 <= input_wavelength < 540.0:
