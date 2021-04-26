@@ -1,11 +1,17 @@
-"""This is the interpolation module of MSE ETC.
-This module includes calculation of Atmospheric transmission using data set by Boxkernal convolution
+"""Interpolation module of MSE ETC.
 
-Modification Log
-2020.02.25 - First created by Taeeun Kim
-2020.03.24 - Updated by Tae-Geun Ji
-2020.03.29 - Updated by Tae-Geun Ji
-2021.04.21 - updated by Mingyoeng Yang
+This module determines the atmospheric transmission depending on pwv 
+and wavelength. This specifies transmission values affected by various 
+variables using data preprocessed using convolution and interpolation.
+
+Todo:
+    * calculate the atmospheric throughput
+
+Modification Log:
+    * 2020.02.25 - First created by Taeeun Kim
+    * 2020.03.24 - Updated by Tae-Geun Ji
+    * 2020.03.29 - Updated by Tae-Geun Ji
+    * 2021.04.21 - updated by Mingyoeng Yang
 """
 
 from parameters import *
@@ -16,30 +22,19 @@ import time
 
 # change 20210421 by MY
 class Throughput:
+    """ determines the atmospheric throughput."""
 
     def __init__(self):
 
         print('...... Reading skytable for Low Resolution')
 
-#        blue_low_path = 'SKY/MSE_AM1_BLUE_2550.dat'
-#        green_low_path = 'SKY/MSE_AM1_GREEN_3650.dat'
-#        red_low_path = 'SKY/MSE_AM1_RED_3600.dat'
-#        nir_low_path = 'SKY/MSE_AM1_NIR_3600.dat'
-
-#        self.data_blue_low = np.genfromtxt(blue_low_path, names=('wavelength', 'data1', 'data2', 'data3'))
-#        self.data_green_low = np.genfromtxt(green_low_path, names=('wavelength', 'data1', 'data2', 'data3'))
-#        self.data_red_low = np.genfromtxt(red_low_path, names=('wavelength', 'data1', 'data2', 'data3'))
-#        self.data_nir_low = np.genfromtxt(nir_low_path, names=('wavelength', 'data1', 'data2', 'data3'))
-
-        # =================================== add by MY ==============================================
-
-        # atmospheric transmission data with no convolution
+        # Atmospheric transmission data for low resolution
         blue_low_box_path = 'SKY/MSE_AM1_box_blue.fits'
         green_low_box_path = 'SKY/MSE_AM1_box_green.fits'
         red_low_box_path = 'SKY/MSE_AM1_box_red.fits'
         nir_low_box_path = 'SKY/MSE_AM1_box_nir.fits'
 
-        # read fits files
+        # read fits files and set data
         self.file_blue_low = fits.open(blue_low_box_path)
         self.file_green_low = fits.open(green_low_box_path)
         self.file_red_low = fits.open(red_low_box_path)
@@ -56,33 +51,10 @@ class Throughput:
         self.file_red_low.close()
         self.file_nir_low.close()
 
-        # set data array (wavelength, transmission)
-        self.wave_blue_low = self.data_blue_low.field(0)
-        self.wave_green_low = self.data_green_low.field(0)
-        self.wave_red_low = self.data_red_low.field(0)
-        self.wave_nir_low = self.data_nir_low.field(0)
-
-        # self.atmo_blue = []
-        self.atmo_blue_pwv1 = self.data_blue_low.field(1)
-        self.atmo_blue_pwv2 = self.data_blue_low.field(2)
-        self.atmo_blue_pwv7 = self.data_blue_low.field(3)
-
-        # self.atmo_green = []
-        self.atmo_green_pwv1 = self.data_green_low.field(1)
-        self.atmo_green_pwv2 = self.data_green_low.field(2)
-        self.atmo_green_pwv7 = self.data_green_low.field(3)
-
-        # self.atmo_red = []
-        self.atmo_red_pwv1 = self.data_red_low.field(1)
-        self.atmo_red_pwv2 = self.data_red_low.field(2)
-        self.atmo_red_pwv7 = self.data_red_low.field(3)
-
-        # self.atmo_nir = []
-        self.atmo_nir_pwv1 = self.data_nir_low.field(1)
-        self.atmo_nir_pwv2 = self.data_nir_low.field(2)
-        self.atmo_nir_pwv7 = self.data_nir_low.field(3)
-
-        # ==========================================================================================
+        self.atmo_blue = []
+        self.atmo_green = []
+        self.atmo_red = []
+        self.atmo_nir = []
 
         self.tau_wave = []
         self.tel_m1_zecoat_arr = []
@@ -97,6 +69,17 @@ class Throughput:
         self.tau_ie = 0
 
     def set_data(self, res_mode):
+        """sets the data array suitable for each resolution mode.
+
+        params:
+            res_mode (str): The resolution mode.
+                * Low resolution
+                * Moderate resolution
+                * High resolution
+
+        Raises:
+        """
+
         if res_mode == "LR":
 
             self.wave_blue = self.data_blue_low.field(0)
@@ -105,42 +88,25 @@ class Throughput:
             self.wave_nir = self.data_nir_low.field(0)
 
 
-            nlen = len(self.wave_blue)
-            self.atmo_blue = [[0] * 3 for i in range(nlen)]
-
-            for i in range(0, nlen):
-                self.atmo_blue[i] = [self.data_blue_low.field(1),
+            self.atmo_blue = []
+            self.atmo_blue = np.array([self.data_blue_low.field(1),
                                      self.data_blue_low.field(2),
-                                     self.data_blue_low.field(3)]
+                                     self.data_blue_low.field(3)])
 
-
-            self.wave_green = self.data_green_low.field(0)
-
-            nlen = len(self.wave_green)
-            self.atmo_green = [[0] * 3 for i in range(nlen)]
-
-            for i in range(0, nlen):
-                self.atmo_green[i] = [self.data_green_low.field(1),
+            self.atmo_green = []
+            self.atmo_green = np.array([self.data_green_low.field(1),
                                       self.data_green_low.field(2),
-                                      self.data_green_low.field(3)]
+                                      self.data_green_low.field(3)])
 
-
-            nlen = len(self.wave_red)
-            self.atmo_red = [[0] * 3 for i in range(nlen)]
-
-            for i in range(0, nlen):
-                self.atmo_red[i] = [self.data_red_low.field(1),
+            self.atmo_red = []
+            self.atmo_red = np.array([self.data_red_low.field(1),
                                     self.data_red_low.field(2),
-                                    self.data_red_low.field(3)]
+                                    self.data_red_low.field(3)])
 
-
-            nlen = len(self.wave_nir)
-            self.atmo_nir = [[0] * 3 for i in range(nlen)]
-
-            for i in range(0, nlen):
-                self.atmo_nir[i] = [self.data_nir_low.field(1),
+            self.atmo_nir = []
+            self.atmo_nir = np.array([self.data_nir_low.field(1),
                                     self.data_nir_low.field(1),
-                                    self.data_nir_low.field(1)]
+                                    self.data_nir_low.field(1)])
 
             data = np.loadtxt("Throughput_LR.dat")
 
@@ -153,72 +119,110 @@ class Throughput:
 
 
     def tau_atmo_blue(self, pwv):
+        """Returns the atmospheric throughput in blue wavelength.
+
+        This fuction finds a specific atmospheric throughput suitable 
+        for pwv. It uses 1-D inpolation of data array in the blue wavelength band.
+
+        params:
+            pwv (float): Precipitable Water Vapor.
+
+        Returns:
+            tau_atmo (float): The atmospheric throughput.
+
+        """
 
         if pwv == 1.0:
-            func = interpolate.interp1d(self.wave_blue, self.atmo_blue_pwv1, kind='linear', bounds_error=False,)
+            func = interpolate.interp1d(self.wave_blue, self.atmo_blue[0, :], kind='linear', bounds_error=False,)
             self.tau_atmo = func(self.wave_blue)
 
         if pwv == 2.5:
-            func = interpolate.interp1d(self.wave_blue, self.atmo_blue_pwv2, kind='linear', bounds_error=False,)
+            func = interpolate.interp1d(self.wave_blue, self.atmo_blue[1, :], kind='linear', bounds_error=False,)
             self.tau_atmo = func(self.wave_blue)
 
         if pwv == 7.5:
-            func = interpolate.interp1d(self.wave_blue, self.atmo_blue_pwv7, kind='linear', bounds_error=False,)
+            func = interpolate.interp1d(self.wave_blue, self.atmo_blue[2, :], kind='linear', bounds_error=False,)
             self.tau_atmo = func(self.wave_blue)
 
         return self.tau_atmo
 
     def tau_atmo_green(self, pwv):
+        """Returns the atmospheric throughput in green wavelength. """
 
         if pwv == 1.0:
-            func = interpolate.interp1d(self.wave_green, self.atmo_green_pwv1, kind='linear', bounds_error=False,)
+            func = interpolate.interp1d(self.wave_green, self.atmo_green[0, :], kind='linear', bounds_error=False,)
             self.tau_atmo = func(self.wave_green)
 
         if pwv == 2.5:
-            func = interpolate.interp1d(self.wave_green, self.atmo_green_pwv2, kind='linear', bounds_error=False,)
+            func = interpolate.interp1d(self.wave_green, self.atmo_green[1, :], kind='linear', bounds_error=False,)
             self.tau_atmo = func(self.wave_green)
 
         if pwv == 7.5:
-            func = interpolate.interp1d(self.wave_green, self.atmo_green_pwv7, kind='linear', bounds_error=False,)
+            func = interpolate.interp1d(self.wave_green, self.atmo_green[2, :], kind='linear', bounds_error=False,)
             self.tau_atmo = func(self.wave_green)
 
         return self.tau_atmo
 
     def tau_atmo_red(self, pwv):
+        """Returns the atmospheric throughput in red wavelength. """
+
 
         if pwv == 1.0:
-            func = interpolate.interp1d(self.wave_red, self.atmo_red_pwv1, kind='linear', bounds_error=False,)
+            func = interpolate.interp1d(self.wave_red, self.atmo_red[0, :], kind='linear', bounds_error=False,)
             self.tau_atmo = func(self.wave_red)
 
         if pwv == 2.5:
-            func = interpolate.interp1d(self.wave_red, self.atmo_red_pwv2, kind='linear', bounds_error=False,)
+            func = interpolate.interp1d(self.wave_red, self.atmo_red[1, :], kind='linear', bounds_error=False,)
             self.tau_atmo = func(self.wave_red)
 
         if pwv == 7.5:
-            func = interpolate.interp1d(self.wave_red, self.atmo_red_pwv7, kind='linear', bounds_error=False,)
+            func = interpolate.interp1d(self.wave_red, self.atmo_red[2, :], kind='linear', bounds_error=False,)
             self.tau_atmo = func(self.wave_red)
 
         return self.tau_atmo
 
     def tau_atmo_nir(self, pwv):
+        """Returns the atmospheric throughput in nir-infrared wavelength. """
+
 
         if pwv == 1.0:
-            func = interpolate.interp1d(self.wave_nir, self.atmo_nir_pwv1, kind='linear', bounds_error=False,)
+            func = interpolate.interp1d(self.wave_nir, self.atmo_nir[0, :], kind='linear', bounds_error=False,)
             self.tau_atmo = func(self.wave_nir)
 
         if pwv == 2.5:
-            func = interpolate.interp1d(self.wave_nir, self.atmo_nir_pwv2, kind='linear', bounds_error=False,)
+            func = interpolate.interp1d(self.wave_nir, self.atmo_nir[1, :], kind='linear', bounds_error=False,)
             self.tau_atmo = func(self.wave_nir)
 
         if pwv == 7.5:
-            func = interpolate.interp1d(self.wave_nir, self.atmo_nir_pwv7, kind='linear', bounds_error=False,)
+            func = interpolate.interp1d(self.wave_nir, self.atmo_nir[2, :], kind='linear', bounds_error=False,)
             self.tau_atmo = func(self.wave_nir)
 
         return self.tau_atmo
 
 
-    #calculate atmosphric throughput with parameters(wavelength, transmission, pwv)
-    def Cal_TAU_atmo(self, wave, transmission1, transmission2, transmission7, pwv):
+    def Cal_tau_atmo(self, wave, transmission1, transmission2, transmission7, pwv):
+        """Calculates the atmospheric throughput with parameters.
+
+        This function estimates the transmission value corresponding to a specific pwv 
+        by calculating transmission data with different pwv.
+
+        params:
+            wave (float): The wavelength band.
+                * Blue 360- 560 nm
+                * Green 540 - 740 nm
+                * Red 715 - 985 nm
+                * Nir 960 - x nm
+            transmission1 (float): The atmospheric transmission extracted under pwv = 1.0.
+            transmission2 (float): The atmospheric transmission extracted under pwv = 2.5.
+            transmission7 (float): The atmospheric transmission extracted under pwv = 7.5.
+            pwv (float): Precipitable Water Vapor.
+
+        Returns: 
+            y (float): The atmospheric transmission.
+
+        Raises:
+
+        """
 
         N_data = len(wave)
         y = np.zeros(N_data)
@@ -237,9 +241,22 @@ class Throughput:
 
         return y
 
+    def Get_tau_atmo(self, input_pwv, input_wavelength):
+        """Return the result value for input parameters.
 
-    #determine atmospheric throughput
-    def Get_TAU_atmo(self, input_pwv, input_wavelength):
+        This function returns the atmospheric throughput according to the wavelength band and pwv
+        inputed by the user, using the calculation defined in the middle level functions above. 
+
+        params:
+            input_pwv (float): pwv set by the user
+            input_wavelength (float): wavelength band set by the user
+
+        Returns: 
+            tau_atmo (float): The atmospheric transmission
+
+        Raises:
+
+        """
 
 
         if 350.0 <= input_wavelength < 540.0:
@@ -248,7 +265,7 @@ class Throughput:
             transmission2 = self.tau_atmo_blue(self.data_pwv[1])
             transmission7 = self.tau_atmo_blue(self.data_pwv[2])
 
-            throughput = self.Cal_TAU_atmo(self.wave_blue, transmission1, transmission2, transmission7, input_pwv)
+            throughput = self.Cal_tau_atmo(self.wave_blue, transmission1, transmission2, transmission7, input_pwv)
             func = interpolate.interp1d(self.wave_blue, throughput, kind='linear', bounds_error=False,)
 
 
@@ -258,7 +275,7 @@ class Throughput:
             transmission2 = self.tau_atmo_green(self.data_pwv[1])
             transmission7 = self.tau_atmo_green(self.data_pwv[2])
 
-            throughput = self.Cal_TAU_atmo(self.wave_green, transmission1, transmission2, transmission7, input_pwv)
+            throughput = self.Cal_tau_atmo(self.wave_green, transmission1, transmission2, transmission7, input_pwv)
             func = interpolate.interp1d(self.wave_green, throughput, kind='linear', bounds_error=False,)
 
 
@@ -268,7 +285,7 @@ class Throughput:
             transmission2 = self.tau_atmo_red(self.data_pwv[1])
             transmission7 = self.tau_atmo_red(self.data_pwv[2])
 
-            throughput = self.Cal_TAU_atmo(self.wave_red, transmission1, transmission2, transmission7, input_pwv)
+            throughput = self.Cal_tau_atmo(self.wave_red, transmission1, transmission2, transmission7, input_pwv)
             func = interpolate.interp1d(self.wave_red, throughput, kind='linear', bounds_error=False,)
 
 
@@ -278,7 +295,7 @@ class Throughput:
             transmission2 = self.tau_atmo_nir(self.data_pwv[1])
             transmission7 = self.tau_atmo_nir(self.data_pwv[2])
 
-            throughput = self.Cal_TAU_atmo(self.wave_nir, transmission1, transmission2, transmission7, input_pwv)
+            throughput = self.Cal_tau_atmo(self.wave_nir, transmission1, transmission2, transmission7, input_pwv)
             func = interpolate.interp1d(self.wave_nir, throughput, kind='linear', bounds_error=False,)
 
         self.tau_atmo = func(input_wavelength)
@@ -286,6 +303,8 @@ class Throughput:
         return self.tau_atmo
 
     def tau_opt_res(self, wave):
+        """ Returns the optical values. """
+
         func_tel_m1_zecoat = interpolate.interp1d(self.tau_wave, self.tel_m1_zecoat_arr, kind='cubic')
         func_tel_wfc_adc = interpolate.interp1d(self.tau_wave, self.tel_wfc_adc_arr, kind='cubic')
         func_sip_fits = interpolate.interp1d(self.tau_wave, self.sip_fits_arr, kind='cubic')
@@ -296,6 +315,8 @@ class Throughput:
         return self.tau_opt
 
     def tau_ie_res(self, wave):
+        """ Returns the injection efficiency. """
+
         func_tau_ie = interpolate.interp1d(self.tau_wave, self.data_tau_ie, kind='cubic')
         self.tau_ie = func_tau_ie(wave)
 
