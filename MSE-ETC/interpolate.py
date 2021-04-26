@@ -11,7 +11,8 @@ Modification Log:
     * 2020.02.25 - First created by Taeeun Kim
     * 2020.03.24 - Updated by Tae-Geun Ji
     * 2020.03.29 - Updated by Tae-Geun Ji
-    * 2021.04.21 - updated by Mingyoeng Yang
+    * 2021.04.21 - Updated by Mingyoeng Yang
+    * 2021.04.26 - Updated by Mingyeong Yang
 """
 
 from parameters import *
@@ -22,7 +23,7 @@ import time
 
 # change 20210421 by MY
 class Throughput:
-    """ determines the atmospheric throughput."""
+    """ Determines the atmospheric throughput."""
 
     def __init__(self):
 
@@ -40,10 +41,10 @@ class Throughput:
         self.file_red_low = fits.open(red_low_box_path)
         self.file_nir_low = fits.open(nir_low_box_path)
 
-        self.data_blue_low = self.file_blue_low[1].data         #blue 350-560
-        self.data_green_low = self.file_green_low[1].data       #green 540-740
-        self.data_red_low = self.file_red_low[1].data           #red 715-985
-        self.data_nir_low = self.file_nir_low[1].data           #nir 960-1800
+        self.data_blue_low = self.file_blue_low[1].data
+        self.data_green_low = self.file_green_low[1].data
+        self.data_red_low = self.file_red_low[1].data
+        self.data_nir_low = self.file_nir_low[1].data
 
         # close files
         self.file_blue_low.close()
@@ -69,7 +70,7 @@ class Throughput:
         self.tau_ie = 0
 
     def set_data(self, res_mode):
-        """sets the data array suitable for each resolution mode.
+        """Sets the data array suitable for each resolution mode.
 
         params:
             res_mode (str): The resolution mode.
@@ -133,15 +134,15 @@ class Throughput:
         """
 
         if pwv == 1.0:
-            func = interpolate.interp1d(self.wave_blue, self.atmo_blue[0, :], kind='linear', bounds_error=False,)
+            func = interpolate.interp1d(self.wave_blue, self.atmo_blue[0, :], kind='linear', bounds_error=False)
             self.tau_atmo = func(self.wave_blue)
 
         if pwv == 2.5:
-            func = interpolate.interp1d(self.wave_blue, self.atmo_blue[1, :], kind='linear', bounds_error=False,)
+            func = interpolate.interp1d(self.wave_blue, self.atmo_blue[1, :], kind='linear', bounds_error=False)
             self.tau_atmo = func(self.wave_blue)
 
         if pwv == 7.5:
-            func = interpolate.interp1d(self.wave_blue, self.atmo_blue[2, :], kind='linear', bounds_error=False,)
+            func = interpolate.interp1d(self.wave_blue, self.atmo_blue[2, :], kind='linear', bounds_error=False)
             self.tau_atmo = func(self.wave_blue)
 
         return self.tau_atmo
@@ -150,15 +151,15 @@ class Throughput:
         """Returns the atmospheric throughput in green wavelength. """
 
         if pwv == 1.0:
-            func = interpolate.interp1d(self.wave_green, self.atmo_green[0, :], kind='linear', bounds_error=False,)
+            func = interpolate.interp1d(self.wave_green, self.atmo_green[0, :], kind='linear', bounds_error=False)
             self.tau_atmo = func(self.wave_green)
 
         if pwv == 2.5:
-            func = interpolate.interp1d(self.wave_green, self.atmo_green[1, :], kind='linear', bounds_error=False,)
+            func = interpolate.interp1d(self.wave_green, self.atmo_green[1, :], kind='linear', bounds_error=False)
             self.tau_atmo = func(self.wave_green)
 
         if pwv == 7.5:
-            func = interpolate.interp1d(self.wave_green, self.atmo_green[2, :], kind='linear', bounds_error=False,)
+            func = interpolate.interp1d(self.wave_green, self.atmo_green[2, :], kind='linear', bounds_error=False)
             self.tau_atmo = func(self.wave_green)
 
         return self.tau_atmo
@@ -168,15 +169,15 @@ class Throughput:
 
 
         if pwv == 1.0:
-            func = interpolate.interp1d(self.wave_red, self.atmo_red[0, :], kind='linear', bounds_error=False,)
+            func = interpolate.interp1d(self.wave_red, self.atmo_red[0, :], kind='linear', bounds_error=False)
             self.tau_atmo = func(self.wave_red)
 
         if pwv == 2.5:
-            func = interpolate.interp1d(self.wave_red, self.atmo_red[1, :], kind='linear', bounds_error=False,)
+            func = interpolate.interp1d(self.wave_red, self.atmo_red[1, :], kind='linear', bounds_error=False)
             self.tau_atmo = func(self.wave_red)
 
         if pwv == 7.5:
-            func = interpolate.interp1d(self.wave_red, self.atmo_red[2, :], kind='linear', bounds_error=False,)
+            func = interpolate.interp1d(self.wave_red, self.atmo_red[2, :], kind='linear', bounds_error=False)
             self.tau_atmo = func(self.wave_red)
 
         return self.tau_atmo
@@ -186,15 +187,15 @@ class Throughput:
 
 
         if pwv == 1.0:
-            func = interpolate.interp1d(self.wave_nir, self.atmo_nir[0, :], kind='linear', bounds_error=False,)
+            func = interpolate.interp1d(self.wave_nir, self.atmo_nir[0, :], kind='linear', bounds_error=False)
             self.tau_atmo = func(self.wave_nir)
 
         if pwv == 2.5:
-            func = interpolate.interp1d(self.wave_nir, self.atmo_nir[1, :], kind='linear', bounds_error=False,)
+            func = interpolate.interp1d(self.wave_nir, self.atmo_nir[1, :], kind='linear', bounds_error=False)
             self.tau_atmo = func(self.wave_nir)
 
         if pwv == 7.5:
-            func = interpolate.interp1d(self.wave_nir, self.atmo_nir[2, :], kind='linear', bounds_error=False,)
+            func = interpolate.interp1d(self.wave_nir, self.atmo_nir[2, :], kind='linear', bounds_error=False)
             self.tau_atmo = func(self.wave_nir)
 
         return self.tau_atmo
